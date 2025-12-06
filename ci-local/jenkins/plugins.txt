@@ -1,0 +1,9 @@
+configuration-as-code
+workflow-aggregator
+credentials
+configuration-as-code-support
+kubernetes-cli
+job-dsl
+gson-api:2.13.2-173.va_a_092315913c
+git-client:6.4.0
+git:5.8.1

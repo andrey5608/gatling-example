@@ -1,0 +1,58 @@
+jenkins:
+  systemMessage: "Local Jenkins for Gatling pipelines"
+  numExecutors: 2
+  mode: NORMAL
+  labelString: "docker"
+  quietPeriod: 0
+  scmCheckoutRetryCount: 2
+  disableRememberMe: false
+  remotingSecurity:
+    enabled: true
+  markupFormatter: plainText
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: admin
+          password: admin
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: false
+unclassified:
+  location:
+    url: http://localhost:8080/
+  shell:
+    shell: "/bin/bash"
+credentials:
+  system:
+    domainCredentials:
+      - credentials:
+          - usernamePassword:
+              scope: GLOBAL
+              id: artifactory-creds
+              username: admin
+              password: password
+              description: "Local Artifactory"
+          - string:
+              scope: GLOBAL
+              id: ocp-token
+              secret: dummy-token
+              description: "Local OpenShift token"
+jobs:
+  - script: |
+      pipelineJob('gatling-jenkins-ocp-tests') {
+        definition {
+          cpsScm {
+            scm {
+              git {
+                remote {
+                  url('https://github.com/andrey5608/gatling-example.git')
+                }
+                branches('*/feature/pipeline')
+                extensions {}
+              }
+            }
+            scriptPath('jenkins-ocp-tests/Jenkinsfile')
+          }
+        }
+      }

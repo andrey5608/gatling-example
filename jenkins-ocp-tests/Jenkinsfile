@@ -1,0 +1,92 @@
+pipeline {
+  agent any
+
+  environment {
+    OC_API = 'https://api.ocp.example.com:6443'
+    OC_PROJECT = 'perf-lab'
+    OC_TOKEN_CREDENTIALS_ID = 'ocp-token'
+    ARTIFACTORY_CREDENTIALS_ID = 'artifactory-creds'
+    ARTIFACTORY_IMAGE = 'artifactory.example.com/perf/gatling-runner:latest'
+    GATLING_IMAGE = "${ARTIFACTORY_IMAGE}"
+    PROM_PUSHGATEWAY = 'http://pushgateway.monitoring.svc:9091'
+    PUSH_JOB = 'gatling-run'
+    SIM = 'org.andrey5608.performance.FastEndpointSimulation'
+    RESULTS_DIR = '/tmp/gatling-results'
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        checkout scm
+      }
+    }
+
+    stage('Build & Push Runner Image') {
+      steps {
+        withCredentials([usernamePassword(credentialsId: env.ARTIFACTORY_CREDENTIALS_ID, passwordVariable: 'ART_PASS', usernameVariable: 'ART_USER')]) {
+          sh '''
+            set -euo pipefail
+            mvn -pl jenkins-ocp-tests -am clean package
+            mvn -pl jenkins-ocp-tests jib:build \
+              -Djib.to.image="$ARTIFACTORY_IMAGE" \
+              -Djib.to.auth.username="$ART_USER" \
+              -Djib.to.auth.password="$ART_PASS"
+          '''
+        }
+      }
+    }
+
+    stage('Run Gatling in OpenShift') {
+      steps {
+        withCredentials([string(credentialsId: env.OC_TOKEN_CREDENTIALS_ID, variable: 'OC_TOKEN')]) {
+          sh '''
+            set -euo pipefail
+            POD_NAME="gatling-run-${BUILD_NUMBER}-$(date +%s)"
+            oc login --token="$OC_TOKEN" --server="$OC_API" --insecure-skip-tls-verify
+            oc project "$OC_PROJECT"
+            oc delete pod "$POD_NAME" --ignore-not-found
+            oc run "$POD_NAME" \
+              --image="$GATLING_IMAGE" \
+              --restart=Never \
+              --env SIMULATION_CLASS="$SIM" \
+              --env GATLING_RESULTS_DIR="$RESULTS_DIR" \
+              --env GATLING_RUN_DESCRIPTION="jenkins-${BUILD_NUMBER}" \
+              --command -- java -cp /app/resources:/app/classes:/app/libs/* org.andrey5608.jenkins.GatlingEntryPoint
+            oc logs -f "pod/$POD_NAME"
+            POD_STATUS=$(oc get pod "$POD_NAME" -o jsonpath='{.status.phase}')
+            if [[ "$POD_STATUS" != "Succeeded" ]]; then
+              oc describe pod "$POD_NAME" || true
+              exit 2
+            fi
+            mkdir -p gatling/target
+            oc cp "$POD_NAME:$RESULTS_DIR" gatling/target/gatling
+            oc delete pod "$POD_NAME"
+          '''
+        }
+      }
+    }
+
+    stage('Publish Prometheus Metrics') {
+      steps {
+        sh '''
+          set -euo pipefail
+          LATEST=$(ls -td gatling/target/gatling/* | head -1)
+          jenkins-ocp-tests/scripts/publish_metrics.sh "$LATEST" "$PROM_PUSHGATEWAY" "$PUSH_JOB" "$SIM"
+        '''
+      }
+    }
+  }
+
+  post {
+    always {
+      archiveArtifacts artifacts: 'gatling/target/gatling/**/*', allowEmptyArchive: true
+    }
+    failure {
+      sh '''
+        set -euo pipefail
+        curl -sS -X POST "$PROM_PUSHGATEWAY/metrics/job/$PUSH_JOB" \
+          --data-binary "gatling_run_success{simulation=\"$SIM\"} 0" >/dev/null || true
+      '''
+    }
+  }
+}

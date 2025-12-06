@@ -66,5 +66,7 @@
         <module>service</module>
         <module>gatling</module>
         <module>infrastructure</module>
+        <module>jenkins-ocp-tests</module>
+        <module>ci-local</module>
     </modules>
 </project>
