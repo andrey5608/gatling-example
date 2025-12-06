@@ -45,7 +45,7 @@ pipeline {
 
     stage('Run Gatling in Docker') {
       steps {
-        dir('..') {
+        dir("${env.WORKSPACE}") {
           sh '''
             set -euo pipefail
             mkdir -p gatling/target
@@ -53,10 +53,7 @@ pipeline {
               -v "$PWD":/workspace \
               -w /workspace \
               maven:3.9-eclipse-temurin-17 \
-              mvn -ntp -pl gatling -am \
-                gatling:test \
-                -Dgatling.simulationClass="$SIM" \
-                -Dgatling.resultsFolder=/workspace/gatling/target/gatling
+              bash -c "set -euo pipefail && cd /workspace && mvn -ntp -pl gatling -am gatling:test -Dgatling.simulationClass=\"$SIM\" -Dgatling.resultsFolder=/workspace/gatling/target/gatling"
           '''
         }
       }
