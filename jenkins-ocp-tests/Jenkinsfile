@@ -47,7 +47,7 @@ pipeline {
             -v "$REPO_ROOT":/workspace \
             -w /workspace \
             maven:3.9-eclipse-temurin-17 \
-            bash -c 'set -euo pipefail && echo "[docker] current dir: $(pwd)" && ls -la && echo "[docker] parent dir:" && ls -la .. && mvn -ntp -pl gatling -am gatling:test -Dgatling.simulationClass="$SIM" -Dgatling.resultsFolder=/workspace/gatling/target/gatling'
+            bash -c "set -euo pipefail && echo '[docker] current dir: \$(pwd)' && ls -la && echo '[docker] parent dir:' && ls -la .. && mvn -ntp -pl gatling -am gatling:test -Dgatling.simulationClass=\"$SIM\" -Dgatling.resultsFolder=/workspace/gatling/target/gatling"
         '''
       }
     }
