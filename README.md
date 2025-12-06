@@ -29,6 +29,20 @@ A reproducible performance-testing playground that exercises a Spring Boot 3.3 s
 
 4. Open the "Gatling Metrics" dashboard in Grafana and select a time range covering the run (e.g., Last 6 hours). Panels should display data immediately after the simulation completes.
 
+## Project Structure
+- `service/`: Spring Boot 3.3 application that exposes `/api/fast-response`, `/api/slow-response`, and Actuator metrics under `/private/metrics`. Micrometer is configured for Prometheus scraping with histogram buckets that back the Application Metrics dashboard.
+- `gatling/`: Scala module that houses reusable `SimulationUtils` helpers plus Gatling simulations compiled by Maven. This module owns the `gatling.conf` that enables the Graphite writer targeting InfluxDB.
+- `infrastructure/`: Docker assets for Grafana, Prometheus, and InfluxDB. Includes provisioning (`grafana/`), scrape configs (`prometheus/`), and an auxiliary Maven POM for container-friendly builds.
+- `docker-compose.yml`: Orchestrates the full stack (service + Gatling metrics pipeline + monitoring).
+- `docs/`: Long-form writeups such as `docs/article-gatling-tests.md` that capture experiment notes and how-to guides.
+- `plan.md`: Running delivery log that tracks scope, assumptions, and the state of each phase.
+
+## Current Load Tests
+- `FastEndpointSimulation`: Exercises `/api/fast-response` at ~60 req/s with a 60 s ramp and 3 minute steady state. Assertions enforce >95% success and <10 s max latency. Ideal for verifying baseline throughput and catching regressions quickly.
+- `SlowEndpointSimulation`: Targets `/api/slow-response` with ~20 req/s, the same 60 s warm-up, and a 4 minute hold to surface back-pressure behavior. Shares the success/latency assertions to guarantee the slow path still meets SLOs.
+
+Both simulations use the shared `SimulationUtils` chain builder so pauses, protocols, and feeder hooks stay consistent. Trigger either one with `mvn -pl gatling gatling:test -Dgatling.simulationClass=...`.
+
 ## Operational Notes
 - **Service only**: `docker compose up -d service` brings up just the Spring Boot API for debugging.
 - **Stopping the stack**: `docker compose down` (add `-v` to drop InfluxDB/Prometheus volumes if you need a clean slate).

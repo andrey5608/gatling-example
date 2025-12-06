@@ -4,9 +4,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class PerformanceTestsApplication {
+public class ApplicationUnderTest {
 
     public static void main(String[] args) {
-        SpringApplication.run(PerformanceTestsApplication.class, args);
+        SpringApplication.run(ApplicationUnderTest.class, args);
     }
 }
