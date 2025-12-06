@@ -39,21 +39,18 @@ pipeline {
 
     stage('Run Gatling in Docker') {
       steps {
-        withCredentials([string(credentialsId: env.OC_TOKEN_CREDENTIALS_ID, variable: 'OC_TOKEN')]) {
-          sh '''
+        sh '''
           set -euo pipefail
           mkdir -p gatling/target
           docker run --rm \
             -v "$PWD":/workspace \
             -w /workspace \
             maven:3.9-eclipse-temurin-17 \
-            mvn -ntp -f /workspace/pom.xml -pl gatling -am \
+            mvn -ntp -pl gatling -am \
               gatling:test \
               -Dgatling.simulationClass="$SIM" \
               -Dgatling.resultsFolder=/workspace/gatling/target/gatling
         '''
-
-        }
       }
     }
 
