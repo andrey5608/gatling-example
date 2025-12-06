@@ -45,7 +45,7 @@ pipeline {
 
     stage('Run Gatling in Docker') {
       steps {
-        dir("${env.WORKSPACE}/..") {
+        dir("${env.WORKSPACE}") {
           sh '''
             set -euo pipefail
             echo "[host] WORKSPACE env: $WORKSPACE"
@@ -59,7 +59,7 @@ pipeline {
               -v "$PWD":/workspace \
               -w /workspace \
               maven:3.9-eclipse-temurin-17 \
-              bash -c "set -euo pipefail && echo '[docker] initial pwd:' && pwd && echo '[docker] workspace contents:' && ls -la && echo '[docker] workspace/gatling contents:' && ls -la gatling && cd /workspace && mvn -ntp -pl gatling -am gatling:test -Dgatling.simulationClass=\"$SIM\" -Dgatling.resultsFolder=/workspace/gatling/target/gatling"
+              bash -c "set -euo pipefail && echo '[docker] initial pwd:' && pwd && echo '[docker] workspace contents:' && ls -la && if [ -d gatling ]; then echo '[docker] workspace/gatling contents:' && ls -la gatling; else echo '[docker] ERROR: gatling directory missing under /workspace' >&2 && ls -la && exit 2; fi && mvn -ntp -pl gatling -am gatling:test -Dgatling.simulationClass=\"$SIM\" -Dgatling.resultsFolder=/workspace/gatling/target/gatling"
           '''
         }
       }
