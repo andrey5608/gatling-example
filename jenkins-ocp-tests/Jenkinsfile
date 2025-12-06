@@ -47,9 +47,7 @@ pipeline {
             -v "$REPO_ROOT":/workspace \
             -w /workspace \
             maven:3.9-eclipse-temurin-17 \
-            ls -la \
-            mvn -ntp -X -pl gatling -am clean install \
-            mvn -ntp -X -pl gatling -am \
+            mvn -ntp -X clean install -pl gatling -am \
               gatling:test \
               -Dgatling.simulationClass="$SIM" \
               -Dgatling.resultsFolder=/workspace/gatling/target/gatling
