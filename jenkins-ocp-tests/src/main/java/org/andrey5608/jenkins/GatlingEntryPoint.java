@@ -1,7 +1,7 @@
 package org.andrey5608.jenkins;
 
 import io.gatling.app.Gatling;
-import io.gatling.core.config.GatlingPropertiesBuilder;
+import io.gatling.app.GatlingPropertiesBuilder;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -26,7 +26,7 @@ public final class GatlingEntryPoint {
             .resultsDirectory(resultsDir)
             .runDescription(runDescription);
 
-        int exitCode = new Gatling().start(builder.build());
+        int exitCode = Gatling.fromMap(builder.build()).start().code();
         if (exitCode != 0) {
             throw new IllegalStateException("Gatling finished with non-zero status: " + exitCode);
         }
@@ -41,7 +41,7 @@ public final class GatlingEntryPoint {
     }
 
     private static String resolveSimulationClass(String[] args) {
-        val simulation = DEFAULT_SIMULATION;
+        String simulation = DEFAULT_SIMULATION;
         if (args != null && args.length > 0 && args[0] != null && !args[0].isBlank()) {
             return args[0];
         }
