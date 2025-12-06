@@ -45,9 +45,12 @@ pipeline {
           mkdir -p gatling/target
           docker run --rm \
             -v "$PWD":/workspace \
-            -w /workspace/gatling \
+            -w /workspace \
             maven:3.9-eclipse-temurin-17 \
-            mvn -ntp gatling:test -Dgatling.simulationClass="$SIM" -Dgatling.resultsFolder="$RESULTS_DIR"
+            mvn -ntp -f /workspace/pom.xml -pl gatling -am \
+              gatling:test \
+              -Dgatling.simulationClass="$SIM" \
+              -Dgatling.resultsFolder=/workspace/gatling/target/gatling
         '''
 
         }
