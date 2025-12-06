@@ -17,7 +17,7 @@ A reproducible performance-testing playground that exercises a Spring Boot 3.3 s
    ```bash
    docker compose up -d --build
    ```
-2. Wait for Grafana (`http://localhost:3000`, default admin/admin) and InfluxDB (`http://localhost:8086`) to report healthy status.
+2. Wait for Grafana (`http://localhost:3000`, default admin/admin — log in with `admin:admin`) and InfluxDB (`http://localhost:8086`) to report healthy status.
 3. Trigger a Gatling default test run (emits metrics to InfluxDB):
    ```bash
    mvn -pl gatling gatling:test
@@ -28,6 +28,17 @@ A reproducible performance-testing playground that exercises a Spring Boot 3.3 s
    ```
 
 4. Open the "Gatling Metrics" dashboard in Grafana and select a time range covering the run (e.g., Last 6 hours). Panels should display data immediately after the simulation completes.
+
+## Grafana Dashboards
+Two curated Grafana boards ship with the stack so you can correlate Gatling load against JVM health immediately:
+
+- **Gatling Metrics**: Shows request throughput, latency buckets, and error rate streamed from InfluxDB/Graphite to validate every run at a glance.
+<img src="docs/images/gatling-metrics.png" alt="Gatling dashboard" height="400"/>
+
+- **Application Metrics**: Uses Prometheus-scraped Micrometer data to track TPS, response delay, live threads, and GC pauses from the Spring Boot service.
+<img src="docs/images/application-metrics.png" alt="Application dashboard" height="400"/>
+
+
 
 ## Project Structure
 - `service/`: Spring Boot 3.3 application that exposes `/api/fast-response`, `/api/slow-response`, and Actuator metrics under `/private/metrics`. Micrometer is configured for Prometheus scraping with histogram buckets that back the Application Metrics dashboard.
