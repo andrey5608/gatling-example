@@ -1,0 +1,147 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "panels": [
+    {
+      "type": "graph",
+      "title": "Gatling TPS",
+      "datasource": "$DS_GATLING",
+      "targets": [
+        {
+          "measurement": "/^gatling\\..*\\.allRequests\\.all\\.count$/",
+          "policy": "autogen",
+          "refId": "A",
+          "resultFormat": "time_series",
+          "groupBy": [
+            { "type": "time", "params": ["$__interval"] },
+            { "type": "fill", "params": ["null"] }
+          ],
+          "select": [
+            [
+              { "type": "field", "params": ["value"] },
+              { "type": "mean", "params": [] }
+            ]
+          ]
+        }
+      ],
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 0 }
+    },
+    {
+      "type": "graph",
+      "title": "Response Times",
+      "datasource": "$DS_GATLING",
+      "targets": [
+        {
+          "measurement": "/^gatling\\..*\\.allRequests\\.all\\.percentiles95$/",
+          "policy": "autogen",
+          "refId": "A",
+          "resultFormat": "time_series",
+          "groupBy": [
+            { "type": "time", "params": ["$__interval"] },
+            { "type": "fill", "params": ["null"] }
+          ],
+          "select": [
+            [
+              { "type": "field", "params": ["value"] },
+              { "type": "mean", "params": [] }
+            ]
+          ]
+        }
+      ],
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 0 }
+    },
+    {
+      "type": "graph",
+      "title": "Success Rate",
+      "datasource": "$DS_GATLING",
+      "targets": [
+        {
+          "measurement": "/^gatling\\..*\\.allRequests\\.ok\\.count$/",
+          "policy": "autogen",
+          "refId": "A",
+          "resultFormat": "time_series",
+          "groupBy": [
+            { "type": "time", "params": ["$__interval"] },
+            { "type": "fill", "params": ["null"] }
+          ],
+          "select": [
+            [
+              { "type": "field", "params": ["value"] },
+              { "type": "mean", "params": [] }
+            ]
+          ]
+        },
+        {
+          "measurement": "/^gatling\\..*\\.allRequests\\.all\\.count$/",
+          "policy": "autogen",
+          "refId": "B",
+          "resultFormat": "time_series",
+          "groupBy": [
+            { "type": "time", "params": ["$__interval"] },
+            { "type": "fill", "params": ["null"] }
+          ],
+          "select": [
+            [
+              { "type": "field", "params": ["value"] },
+              { "type": "mean", "params": [] }
+            ]
+          ]
+        },
+        {
+          "refId": "C",
+          "type": "math",
+          "datasource": null,
+          "expression": "100 * $A / $B"
+        }
+      ],
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 9 }
+    },
+    {
+      "type": "graph",
+      "title": "Failures",
+      "datasource": "$DS_GATLING",
+      "targets": [
+        {
+          "measurement": "/^gatling\\..*\\.allRequests\\.ko\\.count$/",
+          "policy": "autogen",
+          "refId": "A",
+          "resultFormat": "time_series",
+          "groupBy": [
+            { "type": "time", "params": ["$__interval"] },
+            { "type": "fill", "params": ["null"] }
+          ],
+          "select": [
+            [
+              { "type": "field", "params": ["value"] },
+              { "type": "mean", "params": [] }
+            ]
+          ]
+        }
+      ],
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 9 }
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "type": "datasource",
+        "name": "DS_GATLING",
+        "label": "Data Source",
+        "query": "influxdb",
+        "current": {
+          "text": "Default",
+          "value": "default"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "refresh": 1
+      }
+    ]
+  },
+  "schemaVersion": 38,
+  "title": "Gatling Metrics",
+  "version": 1
+}

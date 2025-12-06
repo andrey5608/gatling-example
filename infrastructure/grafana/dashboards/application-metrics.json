@@ -1,0 +1,59 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "panels": [
+    {
+      "type": "graph",
+      "title": "Application TPS",
+      "datasource": "Prometheus-docker",
+      "targets": [
+        {
+          "expr": "rate(http_server_requests_seconds_count{uri=~\"/api/(fast|slow)-response\"}[1m])",
+          "refId": "A"
+        }
+      ],
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 0 }
+    },
+    {
+      "type": "graph",
+      "title": "Response Delay (ms)",
+      "datasource": "Prometheus-docker",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{uri=~\"/api/(fast|slow)-response\"}[5m])) by (le, uri)) * 1000",
+          "refId": "A"
+        }
+      ],
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 0 }
+    },
+    {
+      "type": "graph",
+      "title": "JVM Threads",
+      "datasource": "Prometheus-docker",
+      "targets": [
+        {
+          "expr": "jvm_threads_live_threads",
+          "refId": "A"
+        }
+      ],
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 9 }
+    },
+    {
+      "type": "graph",
+      "title": "GC Pauses",
+      "datasource": "Prometheus-docker",
+      "targets": [
+        {
+          "expr": "rate(jvm_gc_pause_seconds_sum[5m]) * 1000",
+          "refId": "A"
+        }
+      ],
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 9 }
+    }
+  ],
+  "schemaVersion": 38,
+  "title": "Application Metrics",
+  "version": 1
+}

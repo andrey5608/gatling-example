@@ -1,0 +1,36 @@
+services:
+  service:
+    build:
+      context: .
+      dockerfile: service/Dockerfile
+    container_name: perf-service
+    ports:
+      - "8080:8080"
+
+  influxdb:
+    build: ./infrastructure/influxdb
+    container_name: perf-influxdb
+    environment:
+      - INFLUX_USER=admin
+      - INFLUX_PASSWORD=admin
+      - INFLUX_DB=influx
+    ports:
+      - "8086:8086"
+      - "2003:2003"
+
+  prometheus:
+    build: ./infrastructure/prometheus
+    container_name: perf-prometheus
+    depends_on:
+      - service
+    ports:
+      - "9090:9090"
+
+  grafana:
+    build: ./infrastructure/grafana
+    container_name: perf-grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+      - influxdb
