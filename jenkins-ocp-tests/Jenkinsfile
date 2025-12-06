@@ -26,7 +26,7 @@ pipeline {
         withCredentials([usernamePassword(credentialsId: env.ARTIFACTORY_CREDENTIALS_ID, passwordVariable: 'ART_PASS', usernameVariable: 'ART_USER')]) {
           sh '''
             set -euo pipefail
-            mvn -ntp clean package
+            mvn -ntp clean install
             mvn -pl jenkins-ocp-tests -ntp jib:build \
               -Djib.to.image="$ARTIFACTORY_IMAGE" \
               -Djib.to.auth.username="$ART_USER" \
