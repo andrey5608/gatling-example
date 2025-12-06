@@ -42,12 +42,14 @@ pipeline {
         sh '''
           set -euo pipefail
           mkdir -p gatling/target
-          REPO_ROOT="$(cd .. && pwd)"
+          REPO_ROOT="$(pwd)"
           docker run --rm \
             -v "$REPO_ROOT":/workspace \
             -w /workspace \
             maven:3.9-eclipse-temurin-17 \
-            mvn -ntp -pl gatling -am \
+            ls -la \
+            mvn -ntp -X -pl gatling -am clean install \
+            mvn -ntp -X -pl gatling -am \
               gatling:test \
               -Dgatling.simulationClass="$SIM" \
               -Dgatling.resultsFolder=/workspace/gatling/target/gatling
