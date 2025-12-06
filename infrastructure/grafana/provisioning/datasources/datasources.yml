@@ -1,0 +1,19 @@
+apiVersion: 1
+
+datasources:
+  - name: Prometheus-docker
+    type: prometheus
+    isDefault: false
+    access: proxy
+    url: http://prometheus:9090
+    basicAuth: false
+    editable: true
+  - name: InfluxDB
+    type: influxdb
+    uid: P951FEA4DE68E13C5
+    isDefault: true
+    access: proxy
+    url: http://influxdb:8086
+    basicAuth: false
+    database: graphite
+    editable: true
