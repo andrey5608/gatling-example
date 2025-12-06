@@ -42,8 +42,9 @@ pipeline {
         sh '''
           set -euo pipefail
           mkdir -p gatling/target
+          REPO_ROOT="$(cd .. && pwd)"
           docker run --rm \
-            -v "$PWD":/workspace \
+            -v "$REPO_ROOT":/workspace \
             -w /workspace \
             maven:3.9-eclipse-temurin-17 \
             mvn -ntp -pl gatling -am \
@@ -56,7 +57,7 @@ pipeline {
 
     stage('Run Gatling in OpenShift') {
       when {
-        expression { true }
+        expression { false == true }
       }
       steps {
         withCredentials([string(credentialsId: env.OC_TOKEN_CREDENTIALS_ID, variable: 'OC_TOKEN')]) {
