@@ -1,5 +1,11 @@
 pipeline {
   agent any
+  options {
+    disableConcurrentBuilds()
+  }
+  triggers {
+    pollSCM('H/0.5 * * * *')
+  }
 
   environment {
     OC_API = 'https://api.ocp.example.com:6443'
