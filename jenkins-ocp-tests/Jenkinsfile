@@ -4,7 +4,7 @@ pipeline {
     disableConcurrentBuilds()
   }
   triggers {
-    pollSCM('H/0.5 * * * *')
+    pollSCM('H/1 * * * *')
   }
 
   environment {
