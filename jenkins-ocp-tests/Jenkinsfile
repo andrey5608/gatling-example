@@ -53,7 +53,7 @@ pipeline {
               -v "$PWD":/workspace \
               -w /workspace \
               maven:3.9-eclipse-temurin-17 \
-              bash -c "set -euo pipefail && cd /workspace && ls -la && mvn -ntp -pl gatling -am gatling:test -Dgatling.simulationClass=\"$SIM\" -Dgatling.resultsFolder=/workspace/gatling/target/gatling"
+              bash -c "set -euo pipefail && cd /workspace/gatling && ls -la && mvn -ntp -pl gatling -am gatling:test -Dgatling.simulationClass=\"$SIM\" -Dgatling.resultsFolder=/workspace/gatling/target/gatling"
           '''
         }
       }
