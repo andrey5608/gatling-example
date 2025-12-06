@@ -27,16 +27,37 @@ pipeline {
           sh '''
             set -euo pipefail
             mvn -ntp clean install
-            mvn -pl jenkins-ocp-tests -ntp jib:build \
-              -Djib.to.image="$ARTIFACTORY_IMAGE" \
-              -Djib.to.auth.username="$ART_USER" \
-              -Djib.to.auth.password="$ART_PASS"
+            echo "Mock push: mvn -pl jenkins-ocp-tests -ntp jib:build -Djib.to.image=$ARTIFACTORY_IMAGE"
+            # mvn -pl jenkins-ocp-tests -ntp jib:build \
+            #   -Djib.to.image="$ARTIFACTORY_IMAGE" \
+            #   -Djib.to.auth.username="$ART_USER" \
+            #   -Djib.to.auth.password="$ART_PASS"
           '''
         }
       }
     }
 
+    stage('Run Gatling in Docker') {
+      steps {
+        withCredentials([string(credentialsId: env.OC_TOKEN_CREDENTIALS_ID, variable: 'OC_TOKEN')]) {
+          sh '''
+          set -euo pipefail
+          mkdir -p gatling/target
+          docker run --rm \
+            -v "$PWD":/workspace \
+            -w /workspace/gatling \
+            maven:3.9-eclipse-temurin-17 \
+            mvn -ntp gatling:test -Dgatling.simulationClass="$SIM" -Dgatling.resultsFolder="$RESULTS_DIR"
+        '''
+
+        }
+      }
+    }
+
     stage('Run Gatling in OpenShift') {
+      when {
+        expression { true }
+      }
       steps {
         withCredentials([string(credentialsId: env.OC_TOKEN_CREDENTIALS_ID, variable: 'OC_TOKEN')]) {
           sh '''
