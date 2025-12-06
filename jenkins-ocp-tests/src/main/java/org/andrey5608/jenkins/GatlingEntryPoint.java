@@ -1,11 +1,13 @@
 package org.andrey5608.jenkins;
 
 import io.gatling.app.Gatling;
-import io.gatling.app.GatlingPropertiesBuilder;
+import io.gatling.app.Gatling$;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class GatlingEntryPoint {
 
@@ -21,15 +23,22 @@ public final class GatlingEntryPoint {
 
         ensureResultsDir(resultsDir);
 
-        GatlingPropertiesBuilder builder = new GatlingPropertiesBuilder()
-            .simulationClass(simulationClass)
-            .resultsDirectory(resultsDir)
-            .runDescription(runDescription);
-
-        int exitCode = Gatling.fromMap(builder.build()).start().code();
+        String[] gatlingArgs = buildGatlingArgs(simulationClass, resultsDir, runDescription);
+        int exitCode = Gatling$.MODULE$.fromArgs(gatlingArgs);
         if (exitCode != 0) {
             throw new IllegalStateException("Gatling finished with non-zero status: " + exitCode);
         }
+    }
+
+    private static String[] buildGatlingArgs(String simulationClass, String resultsDir, String runDescription) {
+        List<String> args = new ArrayList<>();
+        args.add("-s");
+        args.add(simulationClass);
+        args.add("-rd");
+        args.add(runDescription);
+        args.add("-rf");
+        args.add(resultsDir);
+        return args.toArray(new String[0]);
     }
 
     private static void ensureResultsDir(String resultsDir) {
